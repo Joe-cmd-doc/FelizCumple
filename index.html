@@ -9,7 +9,7 @@
 
 html, body {
   overflow: hidden; /* Bloquea scroll */
-  touch-action: none; /* Bloquea desplazamiento táctil */
+  touch-action: none; /* Bloquea gestos táctiles */
 }
 
 body {
@@ -156,18 +156,18 @@ body.celebration { background:#000; }
   <div class="envelope" id="envelope">
     <div class="envelope-back"></div>
     <div class="envelope-front">
-      <span>¡Haz clic para abrir! 🎉</span>
+      <span>Abre la carta bobaaa 🎉</span>
     </div>
     <div class="card" id="card">
-      <div class="card-header">¡FELIZ CUMPLEAÑOS!</div>
+      <div class="card-header">¡FELIZ CUMPLEAÑOSSS!</div>
       <div class="birthday-cake">🎂</div>
       <div class="card-content">
-        <p>¡Que este nuevo año esté lleno de alegría y momentos mágicos!</p>
-        <p><strong>¡Disfruta tu día especial! 🥳✨</strong></p>
+        <p>¡QUE YA ES TU CUMPLEEEE 17 YA EH!</p>
+        <p><strong>Bobaaaaaaaa te quiero muchisimo ❤️</strong></p>
       </div>
     </div>
   </div>
-  <div class="instruction">👆 Haz clic en la carta para abrirla</div>
+  <div class="instruction">👆 Abre la carta bobaa</div>
 </div>
 
 <audio id="birthdayMusic" src="musica.mp3" preload="auto"></audio>
@@ -178,8 +178,8 @@ const body = document.body;
 let isOpen = false;
 
 // Bloqueo total de scroll y gestos táctiles
-document.addEventListener('touchmove', function(e){ e.preventDefault(); }, { passive:false });
-document.addEventListener('gesturestart', function(e){ e.preventDefault(); });
+document.addEventListener('touchmove', e => e.preventDefault(), { passive:false });
+document.addEventListener('gesturestart', e => e.preventDefault());
 
 // Crear estrellas
 function createStars(count=100){
@@ -195,6 +195,10 @@ function createStars(count=100){
 }
 createStars();
 
+// Variables para controlar elementos activos
+let fireworksActive = 0;
+const maxFireworks = 20;
+
 // Abrir carta
 envelope.addEventListener('click', ()=>{
   if(!isOpen){
@@ -209,24 +213,32 @@ envelope.addEventListener('click', ()=>{
 
 // Fuegos artificiales
 function launchFirework(){
+  if(fireworksActive >= maxFireworks) return;
+  fireworksActive++;
+  
   const fw=document.createElement('div');
   fw.classList.add('firework');
   fw.style.left=Math.random()*100+'vw';
   fw.style.background=getRandomColor();
   document.body.appendChild(fw);
 
-  fw.animate([{transform:'translateY(0)'},{transform:'translateY(-70vh)'}],{duration:1000,easing:'ease-out'}).onfinish=()=>{
+  fw.animate([{transform:'translateY(0)'},{transform:'translateY(-70vh)'}],
+    {duration:1000,easing:'ease-out'}
+  ).onfinish=()=>{
     explode(fw);
     fw.remove();
+    fireworksActive--;
   };
 }
 
+// Explosión con chispas
 function explode(fw){
-  const sparksCount=80;
+  const sparksCount = 30; // menos chispas
+  const duration = 1500; // más rápido
   for(let i=0;i<sparksCount;i++){
     const spark=document.createElement('div');
     spark.classList.add('spark');
-    const size=Math.random()*8+6;
+    const size=Math.random()*6+4;
     spark.style.width=spark.style.height=size+'px';
     spark.style.left=fw.offsetLeft+'px';
     spark.style.bottom='70vh';
@@ -234,12 +246,14 @@ function explode(fw){
     document.body.appendChild(spark);
 
     const angle=Math.random()*2*Math.PI;
-    const distance=Math.random()*400+200;
+    const distance=Math.random()*300+100;
     const dx=Math.cos(angle)*distance;
     const dy=Math.sin(angle)*distance;
 
-    spark.animate([{transform:`translate(0,0)`, opacity:1},{transform:`translate(${dx}px, ${-dy}px)`, opacity:0}],{duration:2500,easing:'ease-out'});
-    setTimeout(()=>spark.remove(),2500);
+    spark.animate([{transform:`translate(0,0)`, opacity:1},{transform:`translate(${dx}px, ${-dy}px)`, opacity:0}],
+      {duration:duration,easing:'ease-out'}
+    );
+    setTimeout(()=>spark.remove(), duration);
   }
 }
 
@@ -247,7 +261,7 @@ function explode(fw){
 function launchComet(){
   const comet=document.createElement('div');
   comet.classList.add('comet');
-  const trail = document.createElement('div');
+  const trail=document.createElement('div');
   trail.classList.add('comet-trail');
 
   const startX=Math.random()*100;
@@ -262,22 +276,26 @@ function launchComet(){
 
   const endX=startX+Math.random()*30+20;
   const endY=startY+Math.random()*10+10;
-
   const animationDuration = 4000;
 
-  comet.animate([{transform:'translate(0,0)'},{transform:`translate(${endX}vw, ${endY}vh)`}],{duration:animationDuration,easing:'linear'}).onfinish=()=>{
+  comet.animate([{transform:'translate(0,0)'},{transform:`translate(${endX}vw, ${endY}vh)`}],
+    {duration:animationDuration,easing:'linear'}).onfinish=()=>{
     comet.remove();
     trail.remove();
   };
 
-  trail.animate([{transform:'translate(0,0)', opacity:0.6},{transform:`translate(${endX}vw, ${endY}vh)`, opacity:0}],{duration:animationDuration,easing:'linear'});
+  trail.animate([{transform:'translate(0,0)', opacity:0.6},{transform:`translate(${endX}vw, ${endY}vh)`, opacity:0}],
+    {duration:animationDuration,easing:'linear'}
+  );
 }
 
+// Colores aleatorios
 function getRandomColor(){
   const colors=['#ff6b6b','#ffd93d','#4ecdc4','#45b7d1','#f9ca24','#8e44ad','#e67e22'];
   return colors[Math.floor(Math.random()*colors.length)];
 }
 
+// Reproducir música
 function playBirthdaySound(){
   const audio=document.getElementById('birthdayMusic');
   audio.play().catch(e=>console.log("Autoplay bloqueado:",e));
