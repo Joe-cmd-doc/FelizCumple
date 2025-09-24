@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¡Feliz Cumpleaños!</title>
+<style>
+* {margin:0; padding:0; box-sizing:border-box;}
+
+body {
+  min-height:100vh;
+  background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+  font-family:'Arial',sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+  transition: background 5s ease-in-out;
+  padding:20px;
+}
+
+body.celebration { background:#000; }
+
+.container { position:relative; perspective:1000px; }
+
+.envelope {
+  width:min(300px,90vw);
+  height:min(200px,60vw);
+  position:relative;
+  cursor:pointer;
+  transition: all 0.6s cubic-bezier(0.68,-0.55,0.265,1.55);
+}
+
+.envelope-back {
+  position:absolute; width:100%; height:100%;
+  background:linear-gradient(45deg,#ff6b6b,#ff8e8e);
+  border-radius:10px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.3);
+}
+
+.envelope-front {
+  position:absolute; width:100%; height:100%;
+  background:linear-gradient(45deg,#ffd93d,#ff6b6b);
+  border-radius:10px;
+  transform-origin:top;
+  transition: transform 0.8s cubic-bezier(0.68,-0.55,0.265,1.55);
+  z-index:2;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:white;
+  font-size:clamp(14px,4vw,18px);
+  font-weight:bold;
+  text-shadow:2px 2px 4px rgba(0,0,0,0.5);
+  text-align:center;
+}
+
+.envelope.open .envelope-front { transform: rotateX(-180deg); }
+.envelope.open .envelope-front span { transform: rotateX(180deg); }
+
+.card {
+  position:absolute;
+  width:min(280px,85vw);
+  background:#fff;
+  border-radius:15px;
+  top:min(-75px,-15vw);
+  left:50%;
+  transform:translateX(-50%) translateY(50px) scale(0);
+  opacity:0;
+  transition: all 0.8s cubic-bezier(0.68,-0.55,0.265,1.55);
+  box-shadow:0 25px 50px rgba(0,0,0,0.3);
+  padding:clamp(20px,5vw,30px);
+  text-align:center;
+  z-index:3;
+}
+
+.envelope.open .card {
+  transform:translateX(-50%) translateY(0) scale(1);
+  opacity:1;
+  transition-delay:0.3s;
+}
+
+.card-header {
+  font-size:clamp(20px,6vw,28px);
+  font-weight:bold;
+  background:linear-gradient(45deg,#ff6b6b,#ffd93d);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  margin-bottom:20px;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow { from{filter:drop-shadow(0 0 5px rgba(255,107,107,0.5));} to{filter:drop-shadow(0 0 20px rgba(255,107,107,0.8));} }
+
+.birthday-cake { font-size:clamp(40px,12vw,60px); margin:20px 0; }
+
+.instruction {
+  position:absolute;
+  bottom:50px;
+  left:50%;
+  transform:translateX(-50%);
+  color:white;
+  font-size:clamp(16px,4vw,18px);
+  text-shadow:2px 2px 4px rgba(0,0,0,0.5);
+  animation:pulse 2s ease-in-out infinite;
+  text-align:center;
+}
+
+@keyframes pulse {0%{opacity:0.7;}50%{opacity:1;}100%{opacity:0.7;}}
+.envelope.open + .instruction { display:none; }
+
+/* Fuegos artificiales */
+.firework { position:absolute; bottom:0; width:4px; height:20px; border-radius:2px; }
+
+/* Chispas explosión */
+.spark { position:absolute; border-radius:50%; opacity:0; }
+
+/* Estrellas */
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: twinkle 2s infinite alternate, moveStars linear infinite;
+}
+
+@keyframes twinkle { 0%{opacity:0.3;} 100%{opacity:1;} }
+@keyframes moveStars { 0%{transform:translate(0,0);} 100%{transform:translate(10px,5px);} }
+
+/* Cometas con estela */
+.comet {
+  position:absolute;
+  width:3px;
+  height:3px;
+  border-radius:50%;
+  background:white;
+}
+.comet-trail {
+  position:absolute;
+  width:3px; height:3px;
+  border-radius:50%;
+  background:white;
+  opacity:0.6;
+  filter: blur(2px);
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="envelope" id="envelope">
+    <div class="envelope-back"></div>
+    <div class="envelope-front">
+      <span>¡Haz clic para abrir! 🎉</span>
+    </div>
+    <div class="card" id="card">
+      <div class="card-header">¡FELIZ CUMPLEAÑOS!</div>
+      <div class="birthday-cake">🎂</div>
+      <div class="card-content">
+        <p>¡Que este nuevo año esté lleno de alegría y momentos mágicos!</p>
+        <p><strong>¡Disfruta tu día especial! 🥳✨</strong></p>
+      </div>
+    </div>
+  </div>
+  <div class="instruction">👆 Haz clic en la carta para abrirla</div>
+</div>
+
+<audio id="birthdayMusic" src="musica.mp3" preload="auto"></audio>
+
+<script>
+const envelope = document.getElementById('envelope');
+const body = document.body;
+let isOpen = false;
+
+// Crear estrellas
+function createStars(count=100){
+  for(let i=0;i<count;i++){
+    const star=document.createElement('div');
+    star.classList.add('star');
+    star.style.left=Math.random()*100+'vw';
+    star.style.top=Math.random()*100+'vh';
+    star.style.width=star.style.height=Math.random()*2+1+'px';
+    star.style.animationDuration=(Math.random()*3+2)+'s, '+(Math.random()*20+10)+'s';
+    document.body.appendChild(star);
+  }
+}
+createStars();
+
+// Abrir carta
+envelope.addEventListener('click', ()=>{
+  if(!isOpen){
+    envelope.classList.add('open');
+    body.classList.add('celebration');
+    isOpen=true;
+    playBirthdaySound();
+    setInterval(launchFirework,600);
+    setInterval(launchComet,4000);
+  }
+});
+
+// Fuegos artificiales con explosión grande
+function launchFirework(){
+  const fw=document.createElement('div');
+  fw.classList.add('firework');
+  fw.style.left=Math.random()*100+'vw';
+  fw.style.background=getRandomColor();
+  document.body.appendChild(fw);
+
+  fw.animate([{transform:'translateY(0)'},{transform:'translateY(-70vh)'}],{duration:1000,easing:'ease-out'}).onfinish=()=>{
+    explode(fw);
+    fw.remove();
+  };
+}
+
+function explode(fw){
+  const sparksCount=80;
+  for(let i=0;i<sparksCount;i++){
+    const spark=document.createElement('div');
+    spark.classList.add('spark');
+    const size=Math.random()*8+6;
+    spark.style.width=spark.style.height=size+'px';
+    spark.style.left=fw.offsetLeft+'px';
+    spark.style.bottom='70vh';
+    spark.style.background=getRandomColor();
+    document.body.appendChild(spark);
+
+    const angle=Math.random()*2*Math.PI;
+    const distance=Math.random()*400+200;
+    const dx=Math.cos(angle)*distance;
+    const dy=Math.sin(angle)*distance;
+
+    spark.animate([{transform:`translate(0,0)`, opacity:1},{transform:`translate(${dx}px, ${-dy}px)`, opacity:0}],{duration:2500,easing:'ease-out'});
+    setTimeout(()=>spark.remove(),2500);
+  }
+}
+
+// Cometas con estela
+function launchComet(){
+  const comet=document.createElement('div');
+  comet.classList.add('comet');
+  const trail = document.createElement('div');
+  trail.classList.add('comet-trail');
+
+  const startX=Math.random()*100;
+  const startY=Math.random()*50;
+  document.body.appendChild(comet);
+  document.body.appendChild(trail);
+
+  comet.style.left=startX+'vw';
+  comet.style.top=startY+'vh';
+  trail.style.left=startX+'vw';
+  trail.style.top=startY+'vh';
+
+  const endX=startX+Math.random()*30+20;
+  const endY=startY+Math.random()*10+10;
+
+  const animationDuration = 4000;
+
+  comet.animate([{transform:'translate(0,0)'},{transform:`translate(${endX}vw, ${endY}vh)`}],{duration:animationDuration,easing:'linear'}).onfinish=()=>{
+    comet.remove();
+    trail.remove();
+  };
+
+  trail.animate([{transform:'translate(0,0)', opacity:0.6},{transform:`translate(${endX}vw, ${endY}vh)`, opacity:0}],{duration:animationDuration,easing:'linear'});
+}
+
+function getRandomColor(){
+  const colors=['#ff6b6b','#ffd93d','#4ecdc4','#45b7d1','#f9ca24','#8e44ad','#e67e22'];
+  return colors[Math.floor(Math.random()*colors.length)];
+}
+
+function playBirthdaySound(){
+  const audio=document.getElementById('birthdayMusic');
+  audio.play().catch(e=>console.log("Autoplay bloqueado:",e));
+}
+</script>
+</body>
+</html>
