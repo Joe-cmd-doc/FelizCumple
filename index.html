@@ -2,10 +2,15 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>¡Feliz Cumpleaños!</title>
 <style>
 * {margin:0; padding:0; box-sizing:border-box;}
+
+html, body {
+  overflow: hidden; /* Bloquea scroll */
+  touch-action: none; /* Bloquea desplazamiento táctil */
+}
 
 body {
   min-height:100vh;
@@ -14,7 +19,6 @@ body {
   display:flex;
   justify-content:center;
   align-items:center;
-  overflow:hidden;
   transition: background 5s ease-in-out;
   padding:20px;
 }
