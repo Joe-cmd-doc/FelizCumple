@@ -7,9 +7,11 @@
 <style>
 * {margin:0; padding:0; box-sizing:border-box;}
 
+/* BLOQUEO DE SCROLL Y ZOOM SIEMPRE */
 html, body {
-  overflow: hidden; /* Bloquea scroll */
-  touch-action: none; /* Bloquea desplazamiento táctil */
+  overflow: hidden !important;      /* Bloquea scroll */
+  touch-action: none !important;    /* Bloquea desplazamiento táctil */
+  overscroll-behavior: none !important; /* Evita rebote en móviles */
 }
 
 body {
